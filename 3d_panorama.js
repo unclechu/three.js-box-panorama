@@ -153,7 +153,12 @@ function ($, THREE) {
             return false;
         }
 
-        /** @private */ this._panoramaId = 'panorama_id_'
+        /**
+         * @type string
+         * @public
+         * @instance
+         */
+        this.panoramaId = 'panorama_id_'
             + (new Date()).getTime()
             + Math.round(Math.random() * 1000000000);
 
@@ -246,41 +251,41 @@ function ($, THREE) {
         };
 
         $(window).bind(
-            'resize.' + this._panoramaId,
+            'resize.' + this.panoramaId,
             this._resizeHandlerWrapper
         );
 
         /** move camera by mouse */
         this.$container.bind(
-            'mousedown.' + this._panoramaId,
+            'mousedown.' + this.panoramaId,
             this.handlers.mouseDownHandler
         );
         this.$container.bind(
-            'mousemove.' + this._panoramaId,
+            'mousemove.' + this.panoramaId,
             this.handlers.mouseMoveHandler
         );
         this.$container.bind(
-            'mouseup.' + this._panoramaId,
+            'mouseup.' + this.panoramaId,
             this.handlers.mouseUpHandler
         );
 
         /** zoom by mouse scroll */
         this.$container.bind(
-            'mousewheel.' + this._panoramaId,
+            'mousewheel.' + this.panoramaId,
             this.handlers.mouseWheelHandler
         );
 
         /** move camera by touch pad */
         this.$container.bind(
-            'touchstart.' + this._panoramaId,
+            'touchstart.' + this.panoramaId,
             this.handlers.touchStartHandler
         );
         this.$container.bind(
-            'touchmove.' + this._panoramaId,
+            'touchmove.' + this.panoramaId,
             this.handlers.touchMoveHandler
         );
         this.$container.bind(
-            'touchend.' + this._panoramaId,
+            'touchend.' + this.panoramaId,
             this.handlers.touchEndHandler
         );
 
@@ -369,8 +374,8 @@ function ($, THREE) {
      */
     Panorama.prototype.destroy
     = function destroy() {
-        this.$container.unbind('.' + this._panoramaId);
-        $(window).unbind('.' + this._panoramaId);
+        this.$container.unbind('.' + this.panoramaId);
+        $(window).unbind('.' + this.panoramaId);
         this.$panoramaWrapper.remove();
         this.$container.removeData('panorama');
         for (var key in this) {try {this[key] = void(0);} catch(e) {}}
