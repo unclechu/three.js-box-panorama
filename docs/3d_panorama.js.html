@@ -44,11 +44,6 @@ define(['jquery', 'three', 'jquery.mousewheel'],
 /** @lends Panorama */
 function ($, THREE) {
     var sides = ['right', 'left', 'top', 'bottom', 'back', 'front'];
-    var privateVars = [
-        '$selector', 'params', 'callback', 'camera', 'scene', '$texturePlaceholder',
-        'textureContext', 'materials', 'mesh', 'target', 'lon', 'lat', 'phi',
-        'theta', 'holdByUser', 'renderer', 'mouseDownState', 'touchStartState'
-    ];
 
     /**
      * @description You need to set "params" keys "panoramaCode" and "imgPathMask" both or absolute paths to key "sideTextures"
@@ -71,145 +66,170 @@ function ($, THREE) {
         /** @private */
         var self = this;
 
-        /**
-         * @callback Panorama~createInstanceCallback
-         * @param {Error|Null} err Exception instance or null if no errors
-         * @this {Panorama} Instance of Panorama
-         */
-        /**
-         * @private
-         * @instance
-         * @type {Panorama~createInstanceCallback}
-         * @name Panorama.callback
-         */
-        var callback;
+        /** @private */
+        var private = {
 
-        /**
-         * @private
-         * @instance
-         * @type {THREE~Camera}
-         * @name Panorama.camera
-         */
-        var camera;
+            /**
+             * @typedef Panorama~params
+             * @type {Object.&lt;*>}
+             * @prop {string} panoramaCode Specific name of panorama for replacing in imgPathMask
+             * @prop {string} imgPathMask Mask of path to image file of side of the panorama
+             * @prop {Array.&lt;string>} [sideNames='right', 'left', 'top', 'bottom', 'back', 'front'] Side names (for imgPathMask)
+             * @prop {Panorama~sideTextures} [sideTextures=null] Key-value object of absolute paths to side-textures
+             * @prop {number} [startFov=75] Start fov value
+             * @prop {number} [minFov=10] Minimal fov value (for zoom)
+             * @prop {number} [maxFov=75] Maximum fov value (for zoom)
+             * @prop {float} [fovMouseStep=2.0] Step of zoom by mouse wheel
+             */
+            /**
+             * @private
+             * @instance
+             * @type {Panorama~params}
+             * @name Panorama.params
+             */
+            params: null,
 
-        /**
-         * @private
-         * @instance
-         * @type {THREE~Scene}
-         * @name Panorama.scene
-         */
-        var scene;
+            /**
+             * @callback Panorama~createInstanceCallback
+             * @param {Error|Null} err Exception instance or null if no errors
+             * @this {Panorama} Instance of Panorama
+             */
+            /**
+             * @private
+             * @instance
+             * @type {Panorama~createInstanceCallback}
+             * @name Panorama.callback
+             */
+            callback: null,
 
-        /**
-         * @private
-         * @instance
-         * @type {jQuery}
-         * @name Panorama.$texturePlaceholder
-         */
-        var $texturePlaceholder;
+            /**
+             * @private
+             * @instance
+             * @type {THREE~Camera}
+             * @name Panorama.camera
+             */
+            camera: null,
 
-        /**
-         * @private
-         * @instance
-         * @type {DOM}
-         * @name Panorama.textureContext
-         */
-        var textureContext;
+            /**
+             * @private
+             * @instance
+             * @type {THREE~Scene}
+             * @name Panorama.scene
+             */
+            scene: null,
 
-        /**
-         * @private
-         * @instance
-         * @type {Array.&lt;string>}
-         * @name Panorama.materials
-         */
-        var materials;
+            /**
+             * @private
+             * @instance
+             * @type {jQuery}
+             * @name Panorama.$texturePlaceholder
+             */
+            $texturePlaceholder: null,
 
-        /**
-         * @private
-         * @instance
-         * @type {THREE~Mesh}
-         * @name Panorama.mesh
-         */
-        var mesh;
+            /**
+             * @private
+             * @instance
+             * @type {DOM}
+             * @name Panorama.textureContext
+             */
+            textureContext: null,
 
-        /**
-         * @private
-         * @instance
-         * @type {THREE~Vector3}
-         * @name Panorama.target
-         */
-        var target;
+            /**
+             * @private
+             * @instance
+             * @type {Array.&lt;string>}
+             * @name Panorama.materials
+             */
+            materials: null,
 
-        /**
-         * @private
-         * @instance
-         * @type {float}
-         * @name Panorama.lon
-         * @default 90.0
-         */
-        var lon = 90.0;
+            /**
+             * @private
+             * @instance
+             * @type {THREE~Mesh}
+             * @name Panorama.mesh
+             */
+            mesh: null,
 
-        /**
-         * @private
-         * @instance
-         * @type {float}
-         * @name Panorama.lat
-         * @default 0.0
-         */
-        var lat = 0.0;
+            /**
+             * @private
+             * @instance
+             * @type {THREE~Vector3}
+             * @name Panorama.target
+             */
+            target: null,
 
-        /**
-         * @private
-         * @instance
-         * @type {float}
-         * @name Panorama.phi
-         * @default 0.0
-         */
-        var phi = 0.0;
+            /**
+             * @private
+             * @instance
+             * @type {float}
+             * @name Panorama.lon
+             * @default 90.0
+             */
+            lon: 90.0,
 
-        /**
-         * @private
-         * @instance
-         * @type {float}
-         * @name Panorama.theta
-         * @default 0.0
-         */
-        var theta = 0.0;
+            /**
+             * @private
+             * @instance
+             * @type {float}
+             * @name Panorama.lat
+             * @default 0.0
+             */
+            lat: 0.0,
 
-        /**
-         * @private
-         * @instance
-         * @type {float}
-         * @name Panorama.holdByUser
-         * @default false
-         */
-        var holdByUser = false;
+            /**
+             * @private
+             * @instance
+             * @type {float}
+             * @name Panorama.phi
+             * @default 0.0
+             */
+            phi: 0.0,
 
-        /**
-         * @private
-         * @instance
-         * @type {THREE~CanvasRenderer}
-         * @name Panorama.renderer
-         */
-        var renderer;
+            /**
+             * @private
+             * @instance
+             * @type {float}
+             * @name Panorama.theta
+             * @default 0.0
+             */
+            theta: 0.0,
 
-        // only for handlers
+            /**
+             * @private
+             * @instance
+             * @type {float}
+             * @name Panorama.holdByUser
+             * @default false
+             */
+            holdByUser: false,
 
-        /**
-         * @private
-         * @instance
-         * @type {Object}
-         * @name Panorama.mouseDownState
-         */
-        var mouseDownState;
+            /**
+             * @private
+             * @instance
+             * @type {THREE~CanvasRenderer}
+             * @name Panorama.renderer
+             */
+            renderer: null,
 
-        /**
-         * @private
-         * @instance
-         * @type {Object}
-         * @name Panorama.touchStartState
-         */
-        var touchStartState;
+            // only for handlers
+
+            /**
+             * @private
+             * @instance
+             * @type {Object}
+             * @name Panorama.mouseDownState
+             */
+            mouseDownState: null,
+
+            /**
+             * @private
+             * @instance
+             * @type {Object}
+             * @name Panorama.touchStartState
+             */
+            touchStartState: null
+
+        };
 
         /**
          * Getter helper
@@ -220,29 +240,12 @@ function ($, THREE) {
          * @returns {*} Private variable value
          */
         this.__getter = function getter(name) {
-            switch (name) {
-                case '$selector': return $selector; break;
-                case 'params': return params; break;
-                case 'callback': return callback; break;
-                case 'camera': return camera; break;
-                case 'scene': return scene; break;
-                case '$texturePlaceholder': return $texturePlaceholder; break;
-                case 'textureContext': return textureContext; break;
-                case 'materials': return materials; break;
-                case 'mesh': return mesh; break;
-                case 'target': return target; break;
-                case 'lon': return lon; break;
-                case 'lat': return lat; break;
-                case 'phi': return phi; break;
-                case 'theta': return theta; break;
-                case 'holdByUser': return holdByUser; break;
-                case 'renderer': return renderer; break;
-                case 'mouseDownState': return mouseDownState; break;
-                case 'touchStartState': return touchStartState; break;
-                default:
-                    throw new self.exceptions.UnknownPrivateVariableName(null, name);
+            if (name in private) {
+                return private[name];
+            } else {
+                throw new self.exceptions.UnknownPrivateVariableName(null, name);
             }
-        }
+        };
 
         /**
          * Setter helper
@@ -252,29 +255,27 @@ function ($, THREE) {
          * @exception {Panorama~UnknownPrivateVariableName}
          */
         this.__setter = function setter(name, val) {
-            switch (name) {
-                case '$selector': $selector = val; break;
-                case 'params': params = val; break;
-                case 'callback': callback = val; break;
-                case 'camera': camera = val; break;
-                case 'scene': scene = val; break;
-                case '$texturePlaceholder': $texturePlaceholder = val; break;
-                case 'textureContext': textureContext = val; break;
-                case 'materials': materials = val; break;
-                case 'mesh': mesh = val; break;
-                case 'target': target = val; break;
-                case 'lon': lon = val; break;
-                case 'lat': lat = val; break;
-                case 'phi': phi = val; break;
-                case 'theta': theta = val; break;
-                case 'holdByUser': holdByUser = val; break;
-                case 'renderer': renderer = val; break;
-                case 'mouseDownState': mouseDownState = val; break;
-                case 'touchStartState': touchStartState = val; break;
-                default:
-                    throw new self.exceptions.UnknownPrivateVariableName(null, name);
+            if (name in private) {
+                private[name] = val;
+            } else {
+                throw new self.exceptions.UnknownPrivateVariableName(null, name);
             }
-        }
+        };
+
+        /**
+         * Cleanup private variables (destroy helper)
+         *
+         * @protected
+         * @instance
+         */
+        this.__destroy = function __destroy() {
+            delete $selector;
+            delete params;
+            for (var key in private) {
+                delete private[key];
+            }
+            delete private;
+        };
 
         if (!$.isPlainObject(params)) {
             self.makeError(new self.exceptions.IncorrectArgument());
@@ -289,8 +290,8 @@ function ($, THREE) {
             }
 
             if ($.type(arg) === 'function') {
-                if (!callback) {
-                    callback = arg;
+                if (!private.callback) {
+                    private.callback = arg;
                 } else {
                     self.makeError(new self.exceptions.IncorrectArgument());
                     return false;
@@ -303,19 +304,7 @@ function ($, THREE) {
             return true;
         })) return false;
 
-        /**
-         * @typedef Panorama~params
-         * @type {Object.&lt;*>}
-         * @prop {string} panoramaCode Specific name of panorama for replacing in imgPathMask
-         * @prop {string} imgPathMask Mask of path to image file of side of the panorama
-         * @prop {Array.&lt;string>} [sideNames='right', 'left', 'top', 'bottom', 'back', 'front'] Side names (for imgPathMask)
-         * @prop {Panorama~sideTextures} [sideTextures=null] Key-value object of absolute paths to side-textures
-         * @prop {number} [startFov=75] Start fov value
-         * @prop {number} [minFov=10] Minimal fov value (for zoom)
-         * @prop {number} [maxFov=75] Maximum fov value (for zoom)
-         * @prop {float} [fovMouseStep=2.0] Step of zoom by mouse wheel
-         */
-        /** @private */ params = $.extend({
+        private.params = $.extend({
 
             // default values
 
@@ -343,15 +332,15 @@ function ($, THREE) {
         }, params);
 
         // check for required parameters
-        if (params.sideTextures === null) {
-            if (params.panoramaCode === null
-            || params.imgPathMask === null) {
+        if (private.params.sideTextures === null) {
+            if (private.params.panoramaCode === null
+            || private.params.imgPathMask === null) {
                 this.makeError(new this.exceptions.RequiredParameter());
                 return false;
             }
         } else {
             if (!sides.every(function (side) {
-                if (!(side in params.sideTextures)) {
+                if (!(side in private.params.sideTextures)) {
                     self.makeError(
                         new self.exceptions
                             .RequiredSideTexture('No '+side+' side texture')
@@ -398,33 +387,33 @@ function ($, THREE) {
             + (new Date()).getTime()
             + Math.round(Math.random() * 1000000000);
 
-        camera = new THREE.PerspectiveCamera(
-            params.startFov,
+        private.camera = new THREE.PerspectiveCamera(
+            private.params.startFov,
             this.$container.width() / this.$container.height(),
             1, 1000
         );
-        scene = new THREE.Scene();
+        private.scene = new THREE.Scene();
 
-        $texturePlaceholder = $('&lt;canvas/>');
-        $texturePlaceholder.width(128);
-        $texturePlaceholder.height(128);
+        private.$texturePlaceholder = $('&lt;canvas/>');
+        private.$texturePlaceholder.width(128);
+        private.$texturePlaceholder.height(128);
 
-        textureContext
-            = $texturePlaceholder.get(0).getContext('2d');
-        textureContext.fillStyle = 'rgb(200, 200, 200)';
-        textureContext.fillRect(
+        private.textureContext
+            = private.$texturePlaceholder.get(0).getContext('2d');
+        private.textureContext.fillStyle = 'rgb(200, 200, 200)';
+        private.textureContext.fillRect(
             0, 0,
-            $texturePlaceholder.width(),
-            $texturePlaceholder.height()
+            private.$texturePlaceholder.width(),
+            private.$texturePlaceholder.height()
         );
 
-        materials = [];
-        if (params.sideTextures === null) {
-            params.sideNames.every(function (side) {
-                materials.push(
+        private.materials = [];
+        if (private.params.sideTextures === null) {
+            private.params.sideNames.every(function (side) {
+                private.materials.push(
                     self.loadTexture(
-                        params.imgPathMask
-                            .replace(/#PANORAMA_CODE#/g, params.panoramaCode)
+                        private.params.imgPathMask
+                            .replace(/#PANORAMA_CODE#/g, private.params.panoramaCode)
                             .replace(/#SIDE#/g, side)
                     )
                 );
@@ -432,24 +421,24 @@ function ($, THREE) {
             });
         } else {
             sides.every(function (side) {
-                materials.push(self.loadTexture(
-                    params.sideTextures[side]
+                private.materials.push(self.loadTexture(
+                    private.params.sideTextures[side]
                 ));
                 return true;
             });
         }
 
-        mesh = new THREE.Mesh(
+        private.mesh = new THREE.Mesh(
             new THREE.BoxGeometry(300, 300, 300, 7, 7, 7),
-            new THREE.MeshFaceMaterial(materials)
+            new THREE.MeshFaceMaterial(private.materials)
         );
-        mesh.scale.x = -1;
-        scene.add(mesh);
+        private.mesh.scale.x = -1;
+        private.scene.add(private.mesh);
 
-        target = new THREE.Vector3();
+        private.target = new THREE.Vector3();
 
-        renderer = new THREE.CanvasRenderer();
-        renderer.setSize(
+        private.renderer = new THREE.CanvasRenderer();
+        private.renderer.setSize(
             this.$container.width(),
             this.$container.height()
         );
@@ -463,7 +452,7 @@ function ($, THREE) {
          */
         this.$panoramaWrapper = $('&lt;div/>').addClass('panorama_wrapper');
 
-        this.$panoramaWrapper.html( renderer.domElement );
+        this.$panoramaWrapper.html( private.renderer.domElement );
         this.$container.append( this.$panoramaWrapper );
 
         this.$container.data('panorama', this);
@@ -472,7 +461,6 @@ function ($, THREE) {
          * @protected
          * @instance
          * @type function
-         * @returns {undefined}
          */
         this.resizeHandlerWrapper
         = function resizeHandlerWrapper() {
@@ -521,9 +509,9 @@ function ($, THREE) {
         // draw first frame
         this.draw();
 
-        if (callback) {
+        if (private.callback) {
             setTimeout(function () {
-                callback.call(self, null);
+                private.callback.call(self, null);
             }, 1);
         }
     }
@@ -619,10 +607,9 @@ function ($, THREE) {
         this.resizeHandlerWrapper = undefined;
 
         // cleanup private variables
-        privateVars.forEach(function (varName) {
-            self.__setter(varName, undefined);
-        });
+        this.__destroy();
 
+        this.__destroy = undefined;
         this.__getter = undefined;
         this.__setter = undefined;
     };
@@ -910,7 +897,7 @@ function ($, THREE) {
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha4</a> on Tue Mar 11 2014 14:31:46 GMT+0400 (MSK)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha4</a> on Tue Mar 11 2014 14:57:02 GMT+0400 (MSK)
 </footer>
 
 <script> prettyPrint(); </script>
