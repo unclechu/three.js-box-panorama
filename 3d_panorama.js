@@ -211,6 +211,7 @@ function ($, THREE) {
          * @instance
          * @exception {Panorama~UnknownPrivateVariableName}
          * @returns {*} Private variable value
+         * @this {Panorama}
          */
         this.__getter = function getter(name) {
             if (name in private) {
@@ -226,6 +227,7 @@ function ($, THREE) {
          * @protected
          * @instance
          * @exception {Panorama~UnknownPrivateVariableName}
+         * @this {Panorama}
          */
         this.__setter = function setter(name, val) {
             if (name in private) {
@@ -240,6 +242,7 @@ function ($, THREE) {
          *
          * @protected
          * @instance
+         * @this {Panorama}
          */
         this.__destroy = function __destroy() {
             delete $selector;
@@ -300,7 +303,7 @@ function ($, THREE) {
             startFov: 75,
             minFov: 10,
             maxFov: 75,
-            fovMouseStep: 2.0,
+            fovMouseStep: 2.0
 
         }, params);
 
@@ -431,9 +434,10 @@ function ($, THREE) {
         this.$container.data('panorama', this);
 
         /**
-         * @protected
+         * @public
          * @instance
          * @type function
+         * @this {window}
          */
         this.resizeHandlerWrapper
         = function resizeHandlerWrapper() {
@@ -702,13 +706,13 @@ function ($, THREE) {
      * @public
      * @type {Object.<function>}
      * @prop {Panorama~resizeHandler} resizeHandler
-     * @prop {function} mouseDownHandler
-     * @prop {function} mouseMoveHandler
-     * @prop {function} mouseUpHandler
-     * @prop {function} mouseWheelHandler
-     * @prop {function} touchStartHandler
-     * @prop {function} touchMoveHandler
-     * @prop {function} touchEndHandler
+     * @prop {Panorama~mouseDownHandler} mouseDownHandler
+     * @prop {Panorama~mouseMoveHandler} mouseMoveHandler
+     * @prop {Panorama~mouseUpHandler} mouseUpHandler
+     * @prop {Panorama~mouseWheelHandler} mouseWheelHandler
+     * @prop {Panorama~touchStartHandler} touchStartHandler
+     * @prop {Panorama~touchMoveHandler} touchMoveHandler
+     * @prop {Panorama~touchEndHandler} touchEndHandler
      * @static
      */
     Panorama.handlers = {};
@@ -716,6 +720,7 @@ function ($, THREE) {
     /**
      * @callback Panorama~resizeHandler
      * @param {Panorama} panorama Instance of Panorama
+     * @this {window}
      */
     Panorama.handlers.resizeHandler
     = function resizeHandler(panorama) {
@@ -737,6 +742,10 @@ function ($, THREE) {
         return panorama;
     }
 
+    /**
+     * @typedef {function} Panorama~mouseDownHandler
+     * @this {DOM} $container
+     */
     Panorama.handlers.mouseDownHandler
     = function mouseDownHandler(event) {
         var panorama = getPanorama.call(this);
@@ -752,6 +761,10 @@ function ($, THREE) {
         return false;
     };
 
+    /**
+     * @typedef {function} Panorama~mouseMoveHandler
+     * @this {DOM} $container
+     */
     Panorama.handlers.mouseMoveHandler
     = function mouseMoveHandler(event) {
         var panorama = getPanorama.call(this);
@@ -771,6 +784,10 @@ function ($, THREE) {
         return false;
     };
 
+    /**
+     * @typedef {function} Panorama~mouseUpHandler
+     * @this {DOM} $container
+     */
     Panorama.handlers.mouseUpHandler
     = function mouseUpHandler(event) {
         var panorama = getPanorama.call(this);
@@ -781,6 +798,10 @@ function ($, THREE) {
         return false;
     };
 
+    /**
+     * @typedef {function} Panorama~mouseWheelHandler
+     * @this {DOM} $container
+     */
     Panorama.handlers.mouseWheelHandler
     = function mouseWheelHandler(event) {
         var panorama = getPanorama.call(this);
@@ -802,6 +823,10 @@ function ($, THREE) {
         return false;
     };
 
+    /**
+     * @typedef {function} Panorama~touchStartHandler
+     * @this {DOM} $container
+     */
     Panorama.handlers.touchStartHandler
     = function touchStartHandler(event) {
         var panorama = getPanorama.call(this);
@@ -819,6 +844,10 @@ function ($, THREE) {
         return false;
     };
 
+    /**
+     * @typedef {function} Panorama~touchMoveHandler
+     * @this {DOM} $container
+     */
     Panorama.handlers.touchMoveHandler
     = function touchMoveHandler(event) {
         var panorama = getPanorama.call(this);
@@ -838,6 +867,10 @@ function ($, THREE) {
         return false;
     };
 
+    /**
+     * @typedef {function} Panorama~touchEndHandler
+     * @this {DOM} $container
+     */
     Panorama.handlers.touchEndHandler
     = function touchEndHandler(event) {
         var panorama = getPanorama.call(this);
