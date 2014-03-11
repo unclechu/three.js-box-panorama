@@ -1,10 +1,11 @@
 /**
- * @overview 3D-panorama
+ * @overview 3D-panorama.
+ * For zoom by mouse scroll "jquery.mousewheel" module is needed.
+ *
  * @module 3d_panorama
  * @exports Panorama
  * @requires requirejs
  * @requires jquery
- * @requires jquery.mousewheel
  * @requires three
  *
  * @see {@link https://github.com/unclechu/html5-ecmascript-3d-panorama/|GitHub}
@@ -13,7 +14,7 @@
  * @license GPLv3
  */
 
-define(['jquery', 'three', 'jquery.mousewheel'],
+define(['jquery', 'three'],
 /** @lends Panorama */
 function ($, THREE) {
     var sides = ['right', 'left', 'top', 'bottom', 'back', 'front'];
@@ -53,6 +54,7 @@ function ($, THREE) {
              * @prop {number} [minFov=10] Minimal fov value (for zoom)
              * @prop {number} [maxFov=75] Maximum fov value (for zoom)
              * @prop {float} [fovMouseStep=2.0] Step of zoom by mouse wheel
+             * @prop {boolean} [mouseWheelRequired=false] Module "jquery.mousewheel" is required
              */
             /**
              * @private
@@ -311,7 +313,8 @@ function ($, THREE) {
             startZoom: 0,
             minFov: 10,
             maxFov: 75,
-            fovMouseStep: 2.0
+            fovMouseStep: 2.0,
+            mouseWheelRequired: false
 
         }, params);
 
@@ -471,12 +474,6 @@ function ($, THREE) {
             this.handlers.mouseUpHandler
         );
 
-        /** zoom by mouse scroll */
-        this.$container.bind(
-            'mousewheel.' + this.panoramaId,
-            this.handlers.mouseWheelHandler
-        );
-
         /** move camera by touch pad */
         this.$container.bind(
             'touchstart.' + this.panoramaId,
@@ -491,14 +488,34 @@ function ($, THREE) {
             this.handlers.touchEndHandler
         );
 
-        // draw first frame
-        this.draw();
+        if (!private.callback) this.draw(); // draw first frame
 
-        if (private.callback) {
-            setTimeout(function () {
-                private.callback.call(self, null);
-            }, 1);
-        }
+        /** zoom by mouse scroll */
+        require(['jquery.mousewheel'], function () {
+            self.$container.bind(
+                'mousewheel.' + self.panoramaId,
+                self.handlers.mouseWheelHandler
+            );
+
+            if (private.callback) {
+                self.draw(); // draw first frame
+                setTimeout(function () { // async
+                    private.callback.call(self, null);
+                }, 1);
+            }
+        }, function (err) {
+            if (private.params.mouseWheelRequired) {
+                self.makeError(err);
+                return false;
+            } else {
+                if (private.callback) {
+                    self.draw(); // draw first frame
+                    setTimeout(function () { // async
+                        private.callback.call(self, null);
+                    }, 1);
+                }
+            }
+        });
     }
 
     /**
