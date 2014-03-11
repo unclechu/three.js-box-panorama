@@ -187,9 +187,17 @@ function ($, THREE) {
             // only for handlers
 
             /**
+             * @typedef {Object.<number|float>} Panorama~handlerState
+             * @prop {number} pageX
+             * @prop {number} pageY
+             * @prop {float} lon
+             * @prop {float} lat
+             */
+
+            /**
              * @private
              * @instance
-             * @type {Object}
+             * @type {Panorama~handlerState}
              * @name Panorama.mouseDownState
              */
             mouseDownState: null,
@@ -197,7 +205,7 @@ function ($, THREE) {
             /**
              * @private
              * @instance
-             * @type {Object}
+             * @type {Panorama~handlerState}
              * @name Panorama.touchStartState
              */
             touchStartState: null
