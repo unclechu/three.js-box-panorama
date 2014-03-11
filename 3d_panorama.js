@@ -17,6 +17,11 @@ define(['jquery', 'three', 'jquery.mousewheel'],
 /** @lends Panorama */
 function ($, THREE) {
     var sides = ['right', 'left', 'top', 'bottom', 'back', 'front'];
+    var privateVars = [
+        '$selector', 'params', 'callback', 'camera', 'scene', '$texturePlaceholder',
+        'textureContext', 'materials', 'mesh', 'target', 'lon', 'lat', 'phi',
+        'theta', 'holdByUser', 'renderer', 'mouseDownState', 'touchStartState'
+    ];
 
     /**
      * @description You need to set "params" keys "panoramaCode" and "imgPathMask" both or absolute paths to key "sideTextures"
@@ -36,36 +41,235 @@ function ($, THREE) {
      * @exception {Panorama~SinglePanoramaPerContainer}
      */
     function Panorama($selector, params/*[, callback]*/) {
+        /** @private */
         var self = this;
-
-        if (!$.isPlainObject(params)) {
-            self._makeError(new self.exceptions.IncorrectArgument());
-            return false;
-        }
 
         /**
          * @callback Panorama~createInstanceCallback
          * @param {Error|Null} err Exception instance or null if no errors
          * @this {Panorama} Instance of Panorama
          */
-        /** @private */ this._callback = null;
+        /**
+         * @private
+         * @instance
+         * @type {Panorama~createInstanceCallback}
+         * @name Panorama.callback
+         */
+        var callback;
+
+        /**
+         * @private
+         * @instance
+         * @type {THREE~Camera}
+         * @name Panorama.camera
+         */
+        var camera;
+
+        /**
+         * @private
+         * @instance
+         * @type {THREE~Scene}
+         * @name Panorama.scene
+         */
+        var scene;
+
+        /**
+         * @private
+         * @instance
+         * @type {jQuery}
+         * @name Panorama.$texturePlaceholder
+         */
+        var $texturePlaceholder;
+
+        /**
+         * @private
+         * @instance
+         * @type {DOM}
+         * @name Panorama.textureContext
+         */
+        var textureContext;
+
+        /**
+         * @private
+         * @instance
+         * @type {Array.<string>}
+         * @name Panorama.materials
+         */
+        var materials;
+
+        /**
+         * @private
+         * @instance
+         * @type {THREE~Mesh}
+         * @name Panorama.mesh
+         */
+        var mesh;
+
+        /**
+         * @private
+         * @instance
+         * @type {THREE~Vector3}
+         * @name Panorama.target
+         */
+        var target;
+
+        /**
+         * @private
+         * @instance
+         * @type {float}
+         * @name Panorama.lon
+         * @default 90.0
+         */
+        var lon = 90.0;
+
+        /**
+         * @private
+         * @instance
+         * @type {float}
+         * @name Panorama.lat
+         * @default 0.0
+         */
+        var lat = 0.0;
+
+        /**
+         * @private
+         * @instance
+         * @type {float}
+         * @name Panorama.phi
+         * @default 0.0
+         */
+        var phi = 0.0;
+
+        /**
+         * @private
+         * @instance
+         * @type {float}
+         * @name Panorama.theta
+         * @default 0.0
+         */
+        var theta = 0.0;
+
+        /**
+         * @private
+         * @instance
+         * @type {float}
+         * @name Panorama.holdByUser
+         * @default false
+         */
+        var holdByUser = false;
+
+        /**
+         * @private
+         * @instance
+         * @type {THREE~CanvasRenderer}
+         * @name Panorama.renderer
+         */
+        var renderer;
+
+        // only for handlers
+
+        /**
+         * @private
+         * @instance
+         * @type {Object}
+         * @name Panorama.mouseDownState
+         */
+        var mouseDownState;
+
+        /**
+         * @private
+         * @instance
+         * @type {Object}
+         * @name Panorama.touchStartState
+         */
+        var touchStartState;
+
+        /**
+         * Getter helper
+         *
+         * @protected
+         * @instance
+         * @exception {Panorama~UnknownPrivateVariableName}
+         * @returns {*} Private variable value
+         */
+        this.__getter = function getter(name) {
+            switch (name) {
+                case '$selector': return $selector; break;
+                case 'params': return params; break;
+                case 'callback': return callback; break;
+                case 'camera': return camera; break;
+                case 'scene': return scene; break;
+                case '$texturePlaceholder': return $texturePlaceholder; break;
+                case 'textureContext': return textureContext; break;
+                case 'materials': return materials; break;
+                case 'mesh': return mesh; break;
+                case 'target': return target; break;
+                case 'lon': return lon; break;
+                case 'lat': return lat; break;
+                case 'phi': return phi; break;
+                case 'theta': return theta; break;
+                case 'holdByUser': return holdByUser; break;
+                case 'renderer': return renderer; break;
+                case 'mouseDownState': return mouseDownState; break;
+                case 'touchStartState': return touchStartState; break;
+                default:
+                    throw new self.exceptions.UnknownPrivateVariableName(null, name);
+            }
+        }
+
+        /**
+         * Setter helper
+         *
+         * @protected
+         * @instance
+         * @exception {Panorama~UnknownPrivateVariableName}
+         */
+        this.__setter = function setter(name, val) {
+            switch (name) {
+                case '$selector': $selector = val; break;
+                case 'params': params = val; break;
+                case 'callback': callback = val; break;
+                case 'camera': camera = val; break;
+                case 'scene': scene = val; break;
+                case '$texturePlaceholder': $texturePlaceholder = val; break;
+                case 'textureContext': textureContext = val; break;
+                case 'materials': materials = val; break;
+                case 'mesh': mesh = val; break;
+                case 'target': target = val; break;
+                case 'lon': lon = val; break;
+                case 'lat': lat = val; break;
+                case 'phi': phi = val; break;
+                case 'theta': theta = val; break;
+                case 'holdByUser': holdByUser = val; break;
+                case 'renderer': renderer = val; break;
+                case 'mouseDownState': mouseDownState = val; break;
+                case 'touchStartState': touchStartState = val; break;
+                default:
+                    throw new self.exceptions.UnknownPrivateVariableName(null, name);
+            }
+        }
+
+        if (!$.isPlainObject(params)) {
+            self.makeError(new self.exceptions.IncorrectArgument());
+            return false;
+        }
 
         // Parse optional arguments
         if (!Array.prototype.slice.call(arguments, 2).every(function (arg, i) {
             if (i > 0) {
-                self._makeError(new self.exceptions.IncorrectArgument());
+                self.makeError(new self.exceptions.IncorrectArgument());
                 return false;
             }
 
             if ($.type(arg) === 'function') {
-                if (!self._callback) {
-                    self._callback = arg;
+                if (!callback) {
+                    callback = arg;
                 } else {
-                    self._makeError(new self.exceptions.IncorrectArgument());
+                    self.makeError(new self.exceptions.IncorrectArgument());
                     return false;
                 }
             } else {
-                self._makeError(new self.exceptions.IncorrectArgument());
+                self.makeError(new self.exceptions.IncorrectArgument());
                 return false;
             }
 
@@ -84,7 +288,7 @@ function ($, THREE) {
          * @prop {number} [maxFov=75] Maximum fov value (for zoom)
          * @prop {float} [fovMouseStep=2.0] Step of zoom by mouse wheel
          */
-        /** @private */ this._params = $.extend({
+        /** @private */ params = $.extend({
 
             // default values
 
@@ -112,16 +316,16 @@ function ($, THREE) {
         }, params);
 
         // check for required parameters
-        if (this._params.sideTextures === null) {
-            if (this._params.panoramaCode === null
-            || this._params.imgPathMask === null) {
-                this._makeError(new this.exceptions.RequiredParameter());
+        if (params.sideTextures === null) {
+            if (params.panoramaCode === null
+            || params.imgPathMask === null) {
+                this.makeError(new this.exceptions.RequiredParameter());
                 return false;
             }
         } else {
             if (!sides.every(function (side) {
-                if (!(side in self._params.sideTextures)) {
-                    self._makeError(
+                if (!(side in params.sideTextures)) {
+                    self.makeError(
                         new self.exceptions
                             .RequiredSideTexture('No '+side+' side texture')
                     );
@@ -141,16 +345,16 @@ function ($, THREE) {
         this.$container = $($selector);
 
         if (this.$container.size() < 1) {
-            this._makeError(new this.exceptions.NoContainer());
+            this.makeError(new this.exceptions.NoContainer());
             return false;
         }
         if (this.$container.width() < 1 || this.$container.height() < 1) {
-            this._makeError(new this.exceptions.ContainerZeroSize());
+            this.makeError(new this.exceptions.ContainerZeroSize());
             return false;
         }
 
         if (this.$container.data('panorama')) {
-            this._makeError(new this.exceptions.SinglePanoramaPerContainer());
+            this.makeError(new this.exceptions.SinglePanoramaPerContainer());
             return false;
         }
 
@@ -167,36 +371,33 @@ function ($, THREE) {
             + (new Date()).getTime()
             + Math.round(Math.random() * 1000000000);
 
-        /** @private */ this._camera = new THREE.PerspectiveCamera(
-            this._params.startFov,
+        camera = new THREE.PerspectiveCamera(
+            params.startFov,
             this.$container.width() / this.$container.height(),
             1, 1000
         );
-        /** @private */ this._scene = new THREE.Scene();
+        scene = new THREE.Scene();
 
-        /** @private */ this._$texturePlaceholder = $('<canvas/>');
-        this._$texturePlaceholder.width(128);
-        this._$texturePlaceholder.height(128);
+        $texturePlaceholder = $('<canvas/>');
+        $texturePlaceholder.width(128);
+        $texturePlaceholder.height(128);
 
-        /** @private */ this._textureContext
-            = this._$texturePlaceholder.get(0).getContext('2d');
-        this._textureContext.fillStyle = 'rgb(200, 200, 200)';
-        this._textureContext.fillRect(
+        textureContext
+            = $texturePlaceholder.get(0).getContext('2d');
+        textureContext.fillStyle = 'rgb(200, 200, 200)';
+        textureContext.fillRect(
             0, 0,
-            this._$texturePlaceholder.width(),
-            this._$texturePlaceholder.height()
+            $texturePlaceholder.width(),
+            $texturePlaceholder.height()
         );
 
-        /** @private */ this._materials = [];
-        if (this._params.sideTextures === null) {
-            this._params.sideNames.every(function (side) {
-                self._materials.push(
-                    self._loadTexture(
-                        self._params.imgPathMask
-                            .replace(
-                                /#PANORAMA_CODE#/g,
-                                self._params.panoramaCode
-                            )
+        materials = [];
+        if (params.sideTextures === null) {
+            params.sideNames.every(function (side) {
+                materials.push(
+                    self.loadTexture(
+                        params.imgPathMask
+                            .replace(/#PANORAMA_CODE#/g, params.panoramaCode)
                             .replace(/#SIDE#/g, side)
                     )
                 );
@@ -204,29 +405,24 @@ function ($, THREE) {
             });
         } else {
             sides.every(function (side) {
-                self._materials.push(self._loadTexture(
-                    self._params.sideTextures[side]
+                materials.push(self.loadTexture(
+                    params.sideTextures[side]
                 ));
                 return true;
             });
         }
 
-        /** @private */ this._mesh = new THREE.Mesh(
+        mesh = new THREE.Mesh(
             new THREE.BoxGeometry(300, 300, 300, 7, 7, 7),
-            new THREE.MeshFaceMaterial(this._materials)
+            new THREE.MeshFaceMaterial(materials)
         );
-        this._mesh.scale.x = -1;
-        this._scene.add(this._mesh);
+        mesh.scale.x = -1;
+        scene.add(mesh);
 
-        /** @private */ this._target = new THREE.Vector3();
-        /** @private */ this._lon = 90.0;
-        /** @private */ this._lat = 0.0;
-        /** @private */ this._phi = 0.0;
-        /** @private */ this._theta = 0.0;
-        /** @private */ this._holdByUser = false;
+        target = new THREE.Vector3();
 
-        /** @private */ this._renderer = new THREE.CanvasRenderer();
-        this._renderer.setSize(
+        renderer = new THREE.CanvasRenderer();
+        renderer.setSize(
             this.$container.width(),
             this.$container.height()
         );
@@ -240,24 +436,25 @@ function ($, THREE) {
          */
         this.$panoramaWrapper = $('<div/>').addClass('panorama_wrapper');
 
-        this.$panoramaWrapper.html( this._renderer.domElement );
+        this.$panoramaWrapper.html( renderer.domElement );
         this.$container.append( this.$panoramaWrapper );
 
         this.$container.data('panorama', this);
 
         /**
-         * @private
+         * @protected
          * @instance
          * @type function
+         * @returns {undefined}
          */
-        this._resizeHandlerWrapper
+        this.resizeHandlerWrapper
         = function resizeHandlerWrapper() {
             self.handlers.resizeHandler.call(this, self);
         };
 
         $(window).bind(
             'resize.' + this.panoramaId,
-            this._resizeHandlerWrapper
+            this.resizeHandlerWrapper
         );
 
         /** move camera by mouse */
@@ -297,9 +494,9 @@ function ($, THREE) {
         // draw first frame
         this.draw();
 
-        if (this._callback) {
+        if (callback) {
             setTimeout(function () {
-                self._callback.call(self, null);
+                callback.call(self, null);
             }, 1);
         }
     }
@@ -309,13 +506,13 @@ function ($, THREE) {
      *
      * @memberOf Panorama
      * @param {string} path Path to texture image file
-     * @private
+     * @protected
      * @static
      * @returns {THREE~Texture}
      */
-    Panorama.prototype._loadTexture
+    Panorama.prototype.loadTexture
     = function loadTexture(path) {
-        var texture = new THREE.Texture(this._$texturePlaceholder.get(0));
+        var texture = new THREE.Texture(this.__getter('$texturePlaceholder').get(0));
         var material = new THREE.MeshBasicMaterial({
             map: texture,
             overdraw: true
@@ -340,7 +537,7 @@ function ($, THREE) {
     = function animationLoop() {
         var self = this;
         requestAnimationFrame(function () {
-            if (!self.animationLoop) return;
+            if (!self.$container) return; // destroyed
             self.animationLoop.call(self);
         });
         self.draw();
@@ -355,19 +552,21 @@ function ($, THREE) {
      */
     Panorama.prototype.draw
     = function draw() {
-        if (this._holdByUser === false) this._lon += 0.1;
-        if (this._lon >= 360.0) this._lon = 0.0;
+        if (this.__getter('holdByUser') === false)
+            this.__setter('lon', this.__getter('lon') + 0.1);
 
-        this._lat = Math.max( -85.0, Math.min(85.0, this._lat) );
-        this._phi = THREE.Math.degToRad(90.0 - this._lat);
-        this._theta = THREE.Math.degToRad(this._lon);
+        if (this.__getter('lon') >= 360.0) this.__setter('lon', 0.0);
 
-        this._target.x = 500.0 * Math.sin(this._phi) * Math.cos(this._theta);
-        this._target.y = 500.0 * Math.cos(this._phi);
-        this._target.z = 500.0 * Math.sin(this._phi) * Math.sin(this._theta);
+        this.__setter('lat', Math.max(-85.0, Math.min(85.0, this.__getter('lat'))) );
+        this.__setter('phi', THREE.Math.degToRad(90.0 - this.__getter('lat')) );
+        this.__setter('theta', THREE.Math.degToRad(this.__getter('lon')) );
 
-        this._camera.lookAt(this._target);
-        this._renderer.render(this._scene, this._camera);
+        this.__getter('target').x = 500.0 * Math.sin(this.__getter('phi')) * Math.cos(this.__getter('theta'));
+        this.__getter('target').y = 500.0 * Math.cos(this.__getter('phi'));
+        this.__getter('target').z = 500.0 * Math.sin(this.__getter('phi')) * Math.sin(this.__getter('theta'));
+
+        this.__getter('camera').lookAt(this.__getter('target'));
+        this.__getter('renderer').render(this.__getter('scene'), this.__getter('camera'));
     };
 
     /**
@@ -379,27 +578,44 @@ function ($, THREE) {
      */
     Panorama.prototype.destroy
     = function destroy() {
+        var self = this;
+
         this.$container.unbind('.' + this.panoramaId);
         $(window).unbind('.' + this.panoramaId);
         this.$panoramaWrapper.remove();
         this.$container.removeData('panorama');
-        for (var key in this) {try {this[key] = void(0);} catch(e) {}}
+
+        // cleanup protected instance variables
+        this.$container = undefined;
+        this.$panoramaWrapper = undefined;
+        this.panoramaId = undefined;
+        this.resizeHandlerWrapper = undefined;
+
+        // cleanup private variables
+        privateVars.forEach(function (varName) {
+            self.__setter(varName, undefined);
+        });
+
+        this.__getter = undefined;
+        this.__setter = undefined;
     };
 
     /**
      * Throw error or delegate to callback
      *
      * @memberOf Panorama
-     * @private
+     * @protected
      * @static
      * @param {Error} exception
+     * @exception {Error} Any exception that in "exception" argument
+     * @returns {boolean} Returns true or throws exception
      */
-    Panorama.prototype._makeError
+    Panorama.prototype.makeError
     = function makeError(exception) {
         var self = this;
-        if (this._callback) {
+        if (this.__getter('callback')) {
             setTimeout(function () {
-                self._callback.call(self, exception);
+                self.__getter('callback').call(self, exception);
                 self.destroy();
             }, 1);
             return true;
@@ -419,6 +635,7 @@ function ($, THREE) {
      * @prop {Panorama~NoContainer} NoContainer Attempt to create instance of Panorama without container
      * @prop {Panorama~ContainerZeroSize} ContainerZeroSize jQuery object of container has no DOM-elements
      * @prop {Panorama~SinglePanoramaPerContainer} SinglePanoramaPerContainer Attempt to create more than one panoramas in same container
+     * @prop {Panorama~UnknownPrivateVariableName} UnknownPrivateVariableName Unknown name of private variable
      * @prop {Panorama~HandlerCannotFoundThePanorama} HandlerCannotFoundThePanorama Panorama removed but handler still triggers
      * @static
      */
@@ -473,6 +690,14 @@ function ($, THREE) {
         this.message = message || 'Attempt to create more than one panoramas in same container';
     };
 
+    /** @typedef {Error} Panorama~UnknownPrivateVariableName */
+    Panorama.exceptions.UnknownPrivateVariableName
+    = function UnknownPrivateVariableName(message, varName) {
+        baseException.call(this);
+        this.message = message || 'Unknown name of private variable'
+            +((varName) ? ' ("'+varName+'")' : '');
+    };
+
     /** @typedef {Error} Panorama~HandlerCannotFoundThePanorama */
     Panorama.exceptions.HandlerCannotFoundThePanorama
     = function HandlerCannotFoundThePanorama(message) {
@@ -507,11 +732,11 @@ function ($, THREE) {
      */
     Panorama.handlers.resizeHandler
     = function resizeHandler(panorama) {
-        panorama._camera.aspect =
+        panorama.__getter('camera').aspect =
             panorama.$container.width() / panorama.$container.height();
-        panorama._camera.updateProjectionMatrix();
+        panorama.__getter('camera').updateProjectionMatrix();
 
-        panorama._renderer.setSize(
+        panorama.__getter('renderer').setSize(
             panorama.$container.width(), panorama.$container.height()
         );
     };
@@ -529,13 +754,13 @@ function ($, THREE) {
     = function mouseDownHandler(event) {
         var panorama = getPanorama.call(this);
 
-        panorama._holdByUser = true;
-        panorama._mouseDownState = {
+        panorama.__setter('holdByUser', true);
+        panorama.__setter('mouseDownState', {
             clientX: event.clientX,
             clientY: event.clientY,
-            lon: panorama._lon,
-            lat: panorama._lat
-        };
+            lon: panorama.__getter('lon'),
+            lat: panorama.__getter('lat')
+        });
 
         return false;
     };
@@ -544,13 +769,16 @@ function ($, THREE) {
     = function mouseMoveHandler(event) {
         var panorama = getPanorama.call(this);
 
-        if (panorama._holdByUser === true && panorama._mouseDownState) {
-            panorama._lon =
-                (panorama._mouseDownState.clientX - event.clientX)
-                * 0.1 + panorama._mouseDownState.lon;
-            panorama._lat =
-                (event.clientY - panorama._mouseDownState.clientY)
-                * 0.1 + panorama._mouseDownState.lat;
+        if (panorama.__getter('holdByUser') === true
+        && panorama.__getter('mouseDownState')) {
+            panorama.__setter('lon',
+                (panorama.__getter('mouseDownState').clientX - event.clientX)
+                * 0.1 + panorama.__getter('mouseDownState').lon
+            );
+            panorama.__setter('lat',
+                (event.clientY - panorama.__getter('mouseDownState').clientY)
+                * 0.1 + panorama.__getter('mouseDownState').lat
+            );
         }
 
         return false;
@@ -560,8 +788,8 @@ function ($, THREE) {
     = function mouseUpHandler(event) {
         var panorama = getPanorama.call(this);
 
-        delete panorama._mouseDownState;
-        panorama._holdByUser = false;
+        panorama.__setter('mouseDownState', undefined);
+        panorama.__setter('holdByUser', false);
 
         return false;
     };
@@ -571,17 +799,17 @@ function ($, THREE) {
         var panorama = getPanorama.call(this);
 
         if (event.deltaY == 1) {
-            if (panorama._camera.fov - panorama._params.fovMouseStep
-            < panorama._params.minFov) return false;
+            if (panorama.__getter('camera').fov - panorama.__getter('params').fovMouseStep
+            < panorama.__getter('params').minFov) return false;
 
-            panorama._camera.fov -= panorama._params.fovMouseStep;
-            panorama._camera.updateProjectionMatrix();
+            panorama.__getter('camera').fov -= panorama.__getter('params').fovMouseStep;
+            panorama.__getter('camera').updateProjectionMatrix();
         } else if (event.deltaY == -1) {
-            if (panorama._camera.fov + panorama._params.fovMouseStep
-            > panorama._params.maxFov) return false;
+            if (panorama.__getter('camera').fov + panorama.__getter('params').fovMouseStep
+            > panorama.__getter('params').maxFov) return false;
 
-            panorama._camera.fov += panorama._params.fovMouseStep;
-            panorama._camera.updateProjectionMatrix();
+            panorama.__getter('camera').fov += panorama.__getter('params').fovMouseStep;
+            panorama.__getter('camera').updateProjectionMatrix();
         }
 
         return false;
@@ -591,14 +819,14 @@ function ($, THREE) {
     = function touchStartHandler(event) {
         var panorama = getPanorama.call(this);
 
-        panorama._holdByUser = true;
+        panorama.__setter('holdByUser', true);
         if (event.touches.length == 1) {
-            panorama._touchStartState = {
+            panorama.__setter('touchStartState', {
                 pageX: event.touches[0].pageX,
                 pageY: event.touches[0].pageY,
-                lon: panorama._lon,
-                lat: panorama._lat
-            };
+                lon: panorama.__getter('lon'),
+                lat: panorama.__getter('lat')
+            });
         }
 
         return false;
@@ -608,14 +836,16 @@ function ($, THREE) {
     = function touchMoveHandler(event) {
         var panorama = getPanorama.call(this);
 
-        if (panorama._holdByUser && event.touches.length == 1
-        && panorama._touchStartState) {
-            panorama._lon =
-                (panorama._touchStartState.pageX - event.touches[0].pageX)
-                * 0.1 + panorama._touchStartState.lon;
-            panorama._lat =
-                (event.touches[0].pageY - panorama._touchStartState.pageY)
-                * 0.1 + panorama._touchStartState.lat;
+        if (panorama.__getter('holdByUser') && event.touches.length == 1
+        && panorama.__getter('touchStartState')) {
+            panorama.__setter('lon',
+                (panorama.__getter('touchStartState').pageX - event.touches[0].pageX)
+                * 0.1 + panorama.__getter('touchStartState').lon
+            );
+            panorama.__setter('lat',
+                (event.touches[0].pageY - panorama.__getter('touchStartState').pageY)
+                * 0.1 + panorama.__getter('touchStartState').lat
+            );
         }
 
         return false;
@@ -625,8 +855,8 @@ function ($, THREE) {
     = function touchEndHandler(event) {
         var panorama = getPanorama.call(this);
 
-        delete panorama._touchStartState;
-        panorama._holdByUser = false;
+        panorama.__setter('touchStartState', undefined);
+        panorama.__setter('holdByUser', false);
 
         return false;
     };
