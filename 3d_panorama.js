@@ -49,7 +49,7 @@ function ($, THREE) {
              * @prop {string} imgPathMask Mask of path to image file of side of the panorama
              * @prop {Array.<string>} [sideNames='right', 'left', 'top', 'bottom', 'back', 'front'] Side names (for imgPathMask)
              * @prop {Panorama~sideTextures} [sideTextures=null] Key-value object of absolute paths to side-textures
-             * @prop {number} [startFov=75] Start fov value
+             * @prop {number} [startZoom=0] Percent of zoom at start (0 is "maxFov", 100 is "minFov")
              * @prop {number} [minFov=10] Minimal fov value (for zoom)
              * @prop {number} [maxFov=75] Maximum fov value (for zoom)
              * @prop {float} [fovMouseStep=2.0] Step of zoom by mouse wheel
@@ -308,7 +308,7 @@ function ($, THREE) {
              */
             sideTextures: null,
 
-            startFov: 75,
+            startZoom: 0,
             minFov: 10,
             maxFov: 75,
             fovMouseStep: 2.0
@@ -372,7 +372,7 @@ function ($, THREE) {
             + Math.round(Math.random() * 1000000000);
 
         private.camera = new THREE.PerspectiveCamera(
-            private.params.startFov,
+            this.zoom(private.params.startZoom, true),
             this.$container.width() / this.$container.height(),
             1, 1000
         );
@@ -524,6 +524,33 @@ function ($, THREE) {
         }).attr('src', path);
 
         return material;
+    };
+
+    /**
+     * Set zoom
+     *
+     * @memberOf Panorama
+     * @param {number} percent Percent of zoom
+     * @param {boolean} [justCalculate=false] Do not set fov to camera, just return new fov value
+     * @public
+     * @static
+     * @returns {number}
+     */
+    Panorama.prototype.zoom
+    = function zoom(percent, justCalculate) {
+        if (percent < 0) percent = 0;
+        if (percent > 100) percent = 100;
+        percent = 100 - percent; // invert value
+
+        var newFov = Math.round(
+            (percent * (
+                this.__getter('params').maxFov - this.__getter('params').minFov
+            ) / 100) + this.__getter('params').minFov
+        );
+
+        if (!justCalculate) this.__getter('camera').fov = newFov;
+
+        return newFov;
     };
 
     /**
