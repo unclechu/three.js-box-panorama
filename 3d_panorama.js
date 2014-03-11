@@ -6,7 +6,7 @@
  * @exports Panorama
  * @requires requirejs
  * @requires jquery
- * @requires three
+ * @requires threejs
  *
  * @see {@link https://github.com/unclechu/html5-ecmascript-3d-panorama/|GitHub}
  * @author Viacheslav Lotsmanov
@@ -14,7 +14,7 @@
  * @license GPLv3
  */
 
-define(['jquery', 'three'],
+define(['jquery', 'threejs'],
 /** @lends Panorama */
 function ($, THREE) {
     var sides = ['right', 'left', 'top', 'bottom', 'back', 'front'];
