@@ -7,6 +7,7 @@
  * @requires jquery.mousewheel
  * @requires three
  *
+ * @see {@link https://github.com/unclechu/html5-ecmascript-3d-panorama/|GitHub}
  * @author Viacheslav Lotsmanov
  * @copyright Based on panorama demo of three.js (http://mrdoob.github.io/three.js/examples/canvas_geometry_panorama.html)
  * @license GPLv3
@@ -154,6 +155,10 @@ function ($, THREE) {
         }
 
         /**
+         * Unique panorama identificator.
+         * Value is automatically generated when created constructor instance.
+         * Will be used for bind handlers.
+         *
          * @type string
          * @public
          * @instance
