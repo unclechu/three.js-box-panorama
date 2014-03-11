@@ -548,7 +548,10 @@ function ($, THREE) {
             ) / 100) + this.__getter('params').minFov
         );
 
-        if (!justCalculate) this.__getter('camera').fov = newFov;
+        if (!justCalculate) {
+            this.__getter('camera').fov = newFov;
+            this.__getter('camera').updateProjectionMatrix();
+        }
 
         return newFov;
     };
