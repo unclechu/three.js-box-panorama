@@ -26,7 +26,7 @@ function ($, THREE) {
      * @public
      *
      * @param {jQuery|string|DOM} $selector jQuery object of container or string of selector or DOM-element
-     * @param {Panorama~params} params Parameters
+     * @param {Panorama~paramsType} params Parameters
      * @param {Panorama~createInstanceCallback} [callback] Callback after instance created (asynchronus)
      *
      * @exception {Panorama~IncorrectArgument}
@@ -42,28 +42,6 @@ function ($, THREE) {
 
         /** @private */
         var private = {
-
-            /**
-             * @typedef Panorama~params
-             * @type {Object.<*>}
-             * @prop {string} panoramaCode Specific name of panorama for replacing in imgPathMask
-             * @prop {string} imgPathMask Mask of path to image file of side of the panorama
-             * @prop {Array.<string>} [sideNames='right', 'left', 'top', 'bottom', 'back', 'front'] Side names (for imgPathMask)
-             * @prop {Panorama~sideTextures} [sideTextures=null] Key-value object of absolute paths to side-textures
-             * @prop {number} [startZoom=0] Percent of zoom at start (0 is "maxFov", 100 is "minFov")
-             * @prop {number} [minFov=10] Minimal fov value (for zoom)
-             * @prop {number} [maxFov=75] Maximum fov value (for zoom)
-             * @prop {float} [fovMouseStep=2.0] Step of zoom by mouse wheel
-             * @prop {boolean} [mouseWheelRequired=false] Module "jquery.mousewheel" is required
-             * @prop {number} [fpsLimit=30] Limit frames per second of animation
-             */
-            /**
-             * @private
-             * @instance
-             * @type {Panorama~params}
-             * @name Panorama.params
-             */
-            params: null,
 
             /**
              * @callback Panorama~createInstanceCallback
@@ -291,7 +269,27 @@ function ($, THREE) {
             return true;
         })) return false;
 
-        private.params = $.extend({
+        /**
+         * @typedef Panorama~paramsType
+         * @type {Object.<*>}
+         * @prop {string} panoramaCode Specific name of panorama for replacing in imgPathMask
+         * @prop {string} imgPathMask Mask of path to image file of side of the panorama
+         * @prop {Array.<string>} [sideNames='right', 'left', 'top', 'bottom', 'back', 'front'] Side names (for imgPathMask)
+         * @prop {Panorama~sideTextures} [sideTextures=null] Key-value object of absolute paths to side-textures
+         * @prop {number} [startZoom=0] Percent of zoom at start (0 is "maxFov", 100 is "minFov")
+         * @prop {number} [minFov=10] Minimal fov value (for zoom)
+         * @prop {number} [maxFov=75] Maximum fov value (for zoom)
+         * @prop {float} [fovMouseStep=2.0] Step of zoom by mouse wheel
+         * @prop {boolean} [mouseWheelRequired=false] Module "jquery.mousewheel" is required
+         * @prop {number} [fpsLimit=30] Limit frames per second of animation
+         */
+        /**
+         * @public
+         * @instance
+         * @type {Panorama~paramsType}
+         * @readOnly
+         */
+        this.params = $.extend({
 
             // default values
 
@@ -321,15 +319,15 @@ function ($, THREE) {
         }, params);
 
         // check for required parameters
-        if (private.params.sideTextures === null) {
-            if (private.params.panoramaCode === null
-            || private.params.imgPathMask === null) {
+        if (this.params.sideTextures === null) {
+            if (this.params.panoramaCode === null
+            || this.params.imgPathMask === null) {
                 this.makeError(new this.exceptions.RequiredParameter());
                 return false;
             }
         } else {
             if (!sides.every(function (side) {
-                if (!(side in private.params.sideTextures)) {
+                if (!(side in self.params.sideTextures)) {
                     self.makeError(
                         new self.exceptions
                             .RequiredSideTexture('No '+side+' side texture')
@@ -346,6 +344,7 @@ function ($, THREE) {
          * @type jQuery
          * @public
          * @instance
+         * @readOnly
          */
         this.$container = $($selector);
 
@@ -371,13 +370,14 @@ function ($, THREE) {
          * @type string
          * @public
          * @instance
+         * @readOnly
          */
         this.panoramaId = 'panorama_id_'
             + (new Date()).getTime()
             + Math.round(Math.random() * 1000000000);
 
         private.camera = new THREE.PerspectiveCamera(
-            this.zoom(private.params.startZoom, true),
+            this.zoom(self.params.startZoom, true),
             this.$container.width() / this.$container.height(),
             1, 1000
         );
@@ -397,12 +397,12 @@ function ($, THREE) {
         );
 
         private.materials = [];
-        if (private.params.sideTextures === null) {
-            private.params.sideNames.every(function (side) {
+        if (this.params.sideTextures === null) {
+            this.params.sideNames.every(function (side) {
                 private.materials.push(
                     self.loadTexture(
-                        private.params.imgPathMask
-                            .replace(/#PANORAMA_CODE#/g, private.params.panoramaCode)
+                        self.params.imgPathMask
+                            .replace(/#PANORAMA_CODE#/g, self.params.panoramaCode)
                             .replace(/#SIDE#/g, side)
                     )
                 );
@@ -411,7 +411,7 @@ function ($, THREE) {
         } else {
             sides.every(function (side) {
                 private.materials.push(self.loadTexture(
-                    private.params.sideTextures[side]
+                    self.params.sideTextures[side]
                 ));
                 return true;
             });
@@ -438,6 +438,7 @@ function ($, THREE) {
          * @type float
          * @public
          * @instance
+         * @readOnly
          */
         this.lastAnimationUpdate = 0.0;
 
@@ -447,6 +448,7 @@ function ($, THREE) {
          * @type jQuery
          * @public
          * @instance
+         * @readOnly
          */
         this.$panoramaWrapper = $('<div/>').addClass('panorama_wrapper');
 
@@ -515,7 +517,7 @@ function ($, THREE) {
                 }, 1);
             }
         }, function (err) {
-            if (private.params.mouseWheelRequired) {
+            if (self.params.mouseWheelRequired) {
                 self.makeError(err);
                 return false;
             } else {
@@ -572,8 +574,8 @@ function ($, THREE) {
 
         var newFov = Math.round(
             (percent * (
-                this.__getter('params').maxFov - this.__getter('params').minFov
-            ) / 100) + this.__getter('params').minFov
+                this.params.maxFov - this.params.minFov
+            ) / 100) + this.params.minFov
         );
 
         if (!justCalculate) {
@@ -599,7 +601,7 @@ function ($, THREE) {
             if (!self.$container) return; // destroyed
 
             if (time - self.lastAnimationUpdate
-            >= 1000 / self.__getter('params').fpsLimit) {
+            >= 1000 / self.params.fpsLimit) {
                 self.draw();
                 self.lastAnimationUpdate = time;
             }
@@ -651,6 +653,7 @@ function ($, THREE) {
         // cleanup protected instance variables
         this.$container = undefined;
         this.$panoramaWrapper = undefined;
+        this.params = undefined;
         this.panoramaId = undefined;
         this.resizeHandlerWrapper = undefined;
         this.lastAnimationUpdate = undefined;
@@ -701,6 +704,7 @@ function ($, THREE) {
      * @prop {Panorama~UnknownPrivateVariableName} UnknownPrivateVariableName Unknown name of private variable
      * @prop {Panorama~HandlerCannotFoundThePanorama} HandlerCannotFoundThePanorama Panorama removed but handler still triggers
      * @static
+     * @readOnly
      */
     Panorama.exceptions = {};
 
@@ -786,6 +790,7 @@ function ($, THREE) {
      * @prop {Panorama~touchMoveHandler} touchMoveHandler
      * @prop {Panorama~touchEndHandler} touchEndHandler
      * @static
+     * @readOnly
      */
     Panorama.handlers = {};
 
@@ -879,16 +884,16 @@ function ($, THREE) {
         var panorama = getPanorama.call(this);
 
         if (event.deltaY == 1) {
-            if (panorama.__getter('camera').fov - panorama.__getter('params').fovMouseStep
-            < panorama.__getter('params').minFov) return false;
+            if (panorama.__getter('camera').fov - panorama.params.fovMouseStep
+            < panorama.params.minFov) return false;
 
-            panorama.__getter('camera').fov -= panorama.__getter('params').fovMouseStep;
+            panorama.__getter('camera').fov -= panorama.params.fovMouseStep;
             panorama.__getter('camera').updateProjectionMatrix();
         } else if (event.deltaY == -1) {
-            if (panorama.__getter('camera').fov + panorama.__getter('params').fovMouseStep
-            > panorama.__getter('params').maxFov) return false;
+            if (panorama.__getter('camera').fov + panorama.params.fovMouseStep
+            > panorama.params.maxFov) return false;
 
-            panorama.__getter('camera').fov += panorama.__getter('params').fovMouseStep;
+            panorama.__getter('camera').fov += panorama.params.fovMouseStep;
             panorama.__getter('camera').updateProjectionMatrix();
         }
 
