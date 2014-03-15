@@ -55,6 +55,7 @@ function ($, THREE) {
              * @prop {number} [maxFov=75] Maximum fov value (for zoom)
              * @prop {float} [fovMouseStep=2.0] Step of zoom by mouse wheel
              * @prop {boolean} [mouseWheelRequired=false] Module "jquery.mousewheel" is required
+             * @prop {number} [fpsLimit=30] Limit frames per second of animation
              */
             /**
              * @private
@@ -314,7 +315,8 @@ function ($, THREE) {
             minFov: 10,
             maxFov: 75,
             fovMouseStep: 2.0,
-            mouseWheelRequired: false
+            mouseWheelRequired: false,
+            fpsLimit: 30
 
         }, params);
 
@@ -429,6 +431,15 @@ function ($, THREE) {
             this.$container.width(),
             this.$container.height()
         );
+
+        /**
+         * Time in milliseconds when last animation frame was drawn
+         *
+         * @type float
+         * @public
+         * @instance
+         */
+        this.lastAnimationUpdate = 0.0;
 
         /**
          * Wrapper of the panorama that putted to container of the panorama
@@ -583,11 +594,18 @@ function ($, THREE) {
     Panorama.prototype.animationLoop
     = function animationLoop() {
         var self = this;
-        requestAnimationFrame(function () {
+
+        requestAnimationFrame(function (time) {
             if (!self.$container) return; // destroyed
+
+            if (time - self.lastAnimationUpdate
+            >= 1000 / self.__getter('params').fpsLimit) {
+                self.draw();
+                self.lastAnimationUpdate = time;
+            }
+
             self.animationLoop.call(self);
         });
-        self.draw();
     };
 
     /**
@@ -625,8 +643,6 @@ function ($, THREE) {
      */
     Panorama.prototype.destroy
     = function destroy() {
-        var self = this;
-
         this.$container.unbind('.' + this.panoramaId);
         $(window).unbind('.' + this.panoramaId);
         this.$panoramaWrapper.remove();
@@ -637,6 +653,7 @@ function ($, THREE) {
         this.$panoramaWrapper = undefined;
         this.panoramaId = undefined;
         this.resizeHandlerWrapper = undefined;
+        this.lastAnimationUpdate = undefined;
 
         // cleanup private variables
         this.__destroy();
