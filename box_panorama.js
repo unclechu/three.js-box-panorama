@@ -10,7 +10,7 @@
  * @requires modernizr
  * @version r2
  *
- * @see {@link https://github.com/unclechu/html5-ecmascript-3d-panorama/|GitHub}
+ * @see {@link https://github.com/unclechu/three.js-box-panorama/|GitHub}
  * @author Viacheslav Lotsmanov
  * @copyright Based on panorama demo of three.js (http://mrdoob.github.io/three.js/examples/canvas_geometry_panorama.html)
  * @license GPLv3 by Free Software Foundation
