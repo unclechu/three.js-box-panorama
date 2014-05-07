@@ -1,7 +1,7 @@
-3D-panorama engine
-==================
+3D-box-panorama engine (r2)
+===========================
 
-[RequireJS](http://requirejs.org/) module based on [three.js](http://threejs.org/) 3D-panorama engine.
+[RequireJS](http://requirejs.org/) module based on [three.js](http://threejs.org/).
 
 Requirements
 ============
@@ -10,6 +10,7 @@ Requirements
 - [jQuery](http://jquery.com/) v2.1+
 - [jQuery.mousewheel](https://plugins.jquery.com/mousewheel/) plugin v3.1.9+ \<optional\> (for zoom by mouse wheel)
 - [three.js](http://threejs.org/) r66+
+- [Modernizr](http://modernizr.com/) 2.8.1+ (for test support WebGL and Canvas)
 
 Documentation
 =============
