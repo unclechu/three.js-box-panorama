@@ -317,6 +317,7 @@ function ($, THREE, Modernizr) {
 		 * @prop {float} [fovMouseStep=2.0] Step of zoom by mouse wheel
 		 * @prop {boolean} [mouseWheelRequired=false] Module "jquery.mousewheel" is required
 		 * @prop {number} [fpsLimit=30] Limit frames per second of animation
+		 * @prop {number} [onlyWebGL=false] If WebGL is not supported - do not use canvas, make error
 		 */
 		/**
 		 * @public
@@ -349,7 +350,8 @@ function ($, THREE, Modernizr) {
 			maxFov: 75,
 			fovMouseStep: 2.0,
 			mouseWheelRequired: false,
-			fpsLimit: 30
+			fpsLimit: 30,
+			onlyWebGL: false
 
 		}, params);
 		// this.params }}}1
@@ -468,7 +470,7 @@ function ($, THREE, Modernizr) {
 				private.renderer = new THREE.WebGLRenderer();
 			} catch (e) {
 				// chromium bug
-				if (Modernizr.canvas) {
+				if (Modernizr.canvas && !this.params.onlyWebGL) {
 					try {
 						private.renderer = new THREE.CanvasRenderer();
 					} catch (err) {
@@ -480,7 +482,7 @@ function ($, THREE, Modernizr) {
 					return false;
 				}
 			} // try-catch
-		} else if (Modernizr.canvas) {
+		} else if (Modernizr.canvas && !this.params.onlyWebGL) {
 			try {
 				private.renderer = new THREE.CanvasRenderer();
 			} catch (e) {
