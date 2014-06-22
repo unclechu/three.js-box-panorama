@@ -8,7 +8,7 @@
  * @requires jquery
  * @requires threejs
  * @requires modernizr
- * @version r2
+ * @version r3
  *
  * @see {@link https://github.com/unclechu/three.js-box-panorama/|GitHub}
  * @author Viacheslav Lotsmanov
@@ -329,7 +329,7 @@ function ($, THREE, Modernizr) {
 		 * @prop {float} [fovMouseStep=2.0] Step of zoom by mouse wheel
 		 * @prop {boolean} [mouseWheelRequired=false] Module "jquery.mousewheel" is required
 		 * @prop {number} [fpsLimit=30] Limit frames per second of animation
-		 * @prop {number} [onlyWebGL=false] If WebGL is not supported - do not use canvas, make error
+		 * @prop {boolean} [onlyWebGL=false] If WebGL is not supported - do not use canvas, make error
 		 */
 		/**
 		 * @public

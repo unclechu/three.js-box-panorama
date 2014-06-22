@@ -1,4 +1,4 @@
-3D-box-panorama engine (r2)
+3D-box-panorama engine (r3)
 ===========================
 
 [RequireJS](http://requirejs.org/) module based on [three.js](http://threejs.org/).
