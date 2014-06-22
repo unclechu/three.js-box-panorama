@@ -8,7 +8,7 @@
  * @requires jquery
  * @requires threejs
  * @requires modernizr
- * @version r3
+ * @version r4
  *
  * @see {@link https://github.com/unclechu/three.js-box-panorama/|GitHub}
  * @author Viacheslav Lotsmanov
@@ -206,15 +206,6 @@ function ($, THREE, Modernizr) {
 			 * @name Panorama.touchStartState
 			 */
 			touchStartState: null,
-
-			/**
-			 * @private
-			 * @instance
-			 * @type {string}
-			 * @name Panorama.fillColor
-			 * @default '#eaeaea'
-			 */
-			fillColor: '#eaeaea',
 
 			/**
 			 * @private
@@ -479,12 +470,12 @@ function ($, THREE, Modernizr) {
 		// renderer init {{{1
 		if (Modernizr.webgl) {
 			try {
-				private.renderer = new THREE.WebGLRenderer();
+				private.renderer = new THREE.WebGLRenderer({ alpha: true });
 			} catch (e) {
 				// chromium bug
 				if (Modernizr.canvas && !this.params.onlyWebGL) {
 					try {
-						private.renderer = new THREE.CanvasRenderer();
+						private.renderer = new THREE.CanvasRenderer({ alpha: true });
 					} catch (err) {
 						self.makeError(new self.exceptions.RendererInitError());
 						return false;
@@ -496,7 +487,7 @@ function ($, THREE, Modernizr) {
 			} // try-catch
 		} else if (Modernizr.canvas && !this.params.onlyWebGL) {
 			try {
-				private.renderer = new THREE.CanvasRenderer();
+				private.renderer = new THREE.CanvasRenderer({ alpha: true });
 			} catch (e) {
 				self.makeError(new self.exceptions.RendererInitError());
 				return false;
@@ -507,6 +498,8 @@ function ($, THREE, Modernizr) {
 		}
 		private.renderer.setSize(this.$container.width(), this.$container.height());
 		// renderer init }}}1
+
+		private.renderer.setClearColor(0xffffff, 0);
 
 		/**
 		 * Time in milliseconds when last animation frame was drawn
