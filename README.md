@@ -16,3 +16,8 @@ Documentation
 =============
 
 See [/docs](./docs/) for automatically generated documentation by [JSDoc](http://usejsdoc.org/) utility.
+
+See also
+========
+
+[3D-sphere-panorama engine](https://github.com/unclechu/three.js-sphere-panorama)
